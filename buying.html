@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Buy Shoes Online</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+    }
+
+    header,
+    footer {
+        background-color: #333;
+        color: #fff;
+        padding: 20px;
+    }
+
+    header h1,
+    footer p {
+        margin: 0;
+    }
+
+    main {
+        margin: 20px;
+    }
+
+    section {
+        margin-bottom: 20px;
+    }
+
+    h2 {
+        font-size: 24px;
+        margin-bottom: 10px;
+    }
+
+    h3 {
+        font-size: 20px;
+        margin-bottom: 10px;
+    }
+
+    img {
+        display: block;
+        max-width: 100%;
+        margin-bottom: 10px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    input[type="number"],
+    select,
+    textarea {
+        margin-bottom: 10px;
+    }
+
+    input[type="submit"] {
+        background-color: #333;
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    input[type="submit"]:hover {
+        background-color: #444;
+    }
+</style>
+
+<body>
+    <header>
+        <h1>Buy Shoes Online</h1>
+    </header>
+    <main>
+        <section>
+            <h2>Product Information</h2>
+            <img src="shoe.jpg" alt="Shoe">
+            <h3>Nike Air Max</h3>
+            <p>The Nike Air Max is a stylish and comfortable shoe that's perfect for running or everyday wear.</p>
+            <p>Price: $99.99</p>
+        </section>
+        <section>
+            <h2>Order Now</h2>
+            <form action="order.php" method="post">
+                <label for="size">Size:</label>
+                <select id="size" name="size">
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                </select>
+                <br>
+                <label for="quantity">Quantity:</label>
+                <input type="number" id="quantity" name="quantity" min="1" max="10" value="1">
+                <br>
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required>
+                <br>
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+                <br>
+                <label for="address">Address:</label>
+                <textarea id="address" name="address" rows="4" cols="30" required></textarea>
+                <br>
+                <input type="submit" value="Buy Now">
+            </form>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2023 Buy Shoes Online. All rights reserved.</p>
+    </footer>
+</body>
+
+</html>
