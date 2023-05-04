@@ -49,7 +49,7 @@
         echo '<div>';
         echo '<img src="uploads/' . $row["image"] . '" alt="' . $row["title"] . '" />';
         echo '<h3>' . $row["title"] . '</h3>';
-        echo '<a href="#">Buy Now <i class="fas fa-chevron-right"></i></a>';
+        echo '<a href="demofuck.php">Buy Now <i class="fas fa-chevron-right"></i></a>';
         echo '</div>';
       }
 

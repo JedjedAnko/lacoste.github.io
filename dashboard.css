@@ -99,6 +99,7 @@ body {
     line-height: 24px;
 }
 
+
 .sidebar-list-item svg {
     margin-right: 8px;
 }
@@ -183,7 +184,6 @@ body {
     padding: 0 16px;
     transition: 0.2s;
     cursor: pointer;
-    transform: translateX(110vh);
     margin: 0.25rem;
 }
 
@@ -223,7 +223,7 @@ body {
 .products-area-wrapper {
     width: 100%;
     max-height: 100%;
-    overflow: auto;
+    overflow: scroll;
     padding: 0 4px;
 
 }

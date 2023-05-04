@@ -1,8 +1,9 @@
 <?php
 include 'session_chk.php';
+include 'conn.php';
 
 if (!isSessionActive()) {
-    header("location: index.php");
+    header("location: login.html");
 }
 ?>
 
@@ -23,6 +24,7 @@ if (!isSessionActive()) {
         justify-content: flex-start;
         padding: 0 4px;
     }
+
     .app-content-headerButton {
         background-color: var(--action-color);
         color: #fff;
@@ -37,7 +39,15 @@ if (!isSessionActive()) {
         transform: translateX(110vh);
         margin: 0.25rem;
     }
+
+    .products-area-wrappers {
+        overflow: hidden;
+    }
 </style>
+
+<head>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+</head>
 
 <body>
     <div class="app-container">
@@ -47,75 +57,126 @@ if (!isSessionActive()) {
                     <img src="https://lacoste.com.ph/media/logo/default/default-logo-desktop_1_1.svg">
                 </div>
             </div>
-            <ul class="sidebar-list">
-                <li class="sidebar-list-item active">
-                    <a href="#">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="feather feather-shopping-bag">
-                            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
-                            <line x1="3" y1="6" x2="21" y2="6" />
-                            <path d="M16 10a4 4 0 0 1-8 0" />
-                        </svg>
-                        <span>Products</span>
-                    </a>
-                </li>
-                <li class="sidebar-list-item">
-                    <a href="logout.php">Logout</a>
-                </li>
+
+            <nav>
+                <ul class="sidebar-list">
+                    <li data-rel="1" class="sidebar-list-item active"><a href="#"><span>Dasboard</span></a></li>
+                    <li data-rel="2" class="sidebar-list-item"><a href="#"><span>Products</span></a></li>
+                    <li data-rel="3" class="sidebar-list-item"><a href="#"><span>Sales</span></a></li>
+                    <li data-rel="4" class="sidebar-list-item"><a href="#"><span>Clients</span></a></li>
+                    <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+                    <li class="sidebar-list-item"><a href="logout.php">Logout</a></li>
+            </nav>
+
         </div>
-        <div class="app-content">
+        <section class="products-area-wrappers" id="printable-section">
+            <article>
+                <div class=" app-content">
+                    <div class="app-content-header">
+                        <h1 class="app-content-headerText">Dashboard</h1>
+                        <button class="app-content-headerButton" onclick="printSection()"
+                            style="transform: translateX(130vh);">Print</button>
+                    </div>
+                    <?php
+                    // Retrieve the products data from the database
+                    $sql = "SELECT id, title, sales, stock, price FROM products";
+                    $result = mysqli_query($conn, $sql);
+                    // Create arrays to store the data
+                    $ids = array();
+                    $titles = array();
+                    $sales = array();
+                    $stocks = array();
+                    $prices = array();
+                    // Loop through the results and add the data to the arrays
+                    while ($row = mysqli_fetch_assoc($result)) {
+                        $ids[] = $row['id'];
+                        $titles[] = $row['title'];
+                        $sales[] = (int) $row['sales'];
+                        $stocks[] = (int) $row['stock'];
+                        $prices[] = (int) $row['price'];
+                    }
+                    // Create the chart data array
+                    $chart_data = array();
+                    $chart_data[] = array('Product', 'Sales', 'Stock', 'Price');
+                    for ($i = 0; $i < count($ids); $i++) {
+                        $chart_data[] = array($titles[$i], $sales[$i], $stocks[$i], $prices[$i]);
+                    }
+                    // Convert the chart data to JSON format
+                    $chart_data_json = json_encode($chart_data);
+                    ?>
+                    <!DOCTYPE html>
+                    <html>
+
+                    <head>
+                        <title>Product Sales and Stock Chart</title>
+                        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+                        <script type="text/javascript">
+                            google.charts.load('current', { 'packages': ['corechart'] });
+                            google.charts.setOnLoadCallback(drawChart);
+                            function drawChart() {
+                                var data = google.visualization.arrayToDataTable(<?php echo $chart_data_json; ?>);
+                                var options = {
+                                    title: 'Product Sales and Stock Levels',
+                                    hAxis: { title: 'Product', titleTextStyle: { color: '#333' } },
+                                    vAxis: { minValue: 0 },
+                                    seriesType: 'bars',
+                                    series: { 2: { type: 'line' } }
+                                };
+                                var chart = new google.visualization.ComboChart(document.getElementById('chart_div'));
+                                chart.draw(data, options);
+                            }
+                        </script>
+                        <script>
+                            function printSection() {
+                                var chartData = <?php echo json_encode($chart_data_json); ?>;
+                                var sectionToPrint = document.getElementById("printable-section");
+                                var chartDiv = document.createElement("div");
+                                chartDiv.innerHTML = "<h2>Sales and Stock Levels</h2>" + chartData;
+                                sectionToPrint.appendChild(chartDiv);
+                                var newWin = window.open('', 'Print-Window');
+                                newWin.document.write('<html><body>' + sectionToPrint.innerHTML + '</body></html>');
+                                newWin.document.close();
+                                newWin.focus();
+                                newWin.print();
+                                newWin.close();
+                                // Remove the chartDiv from the section after printing
+                                sectionToPrint.removeChild(chartDiv);
+                            }
+                        </script>
+                    </head>
+
+                    <body>
+                        <div id="chart_div" style="width: 90%; height: 500px;"></div>
+                    </body>
+
+                    </html>
+
+            </article>
+        </section>
+
+        <section class="products-area-wrappers"">
+            <article>
+                <div class=" app-content">
             <div class="app-content-header">
                 <h1 class="app-content-headerText">Products</h1>
-                <button class="app-content-headerButton" onclick="redirectToPage()">Add Product</button>
-                <button class="app-content-headerButton" onclick="redirectToPage1()">Delete Product</button>
-            </div>
+                <button class="app-content-headerButton" onclick="redirectToPage()"
+                    style="transform: translateX(125vh);">Add Product</button>
 
+                <!-- <button class="app-content-headerButton" onclick="printSection()">Print</button> -->
+            </div>
             <div class="products-area-wrapper gridView">
                 <div class="products-header">
                     <div class="product-cell image">
                         Items
-                        <button class="sort-button">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 512 512">
-                                <path fill="currentColor"
-                                    d="M496.1 138.3L375.7 17.9c-7.9-7.9-20.6-7.9-28.5 0L226.9 138.3c-7.9 7.9-7.9 20.6 0 28.5 7.9 7.9 20.6 7.9 28.5 0l85.7-85.7v352.8c0 11.3 9.1 20.4 20.4 20.4 11.3 0 20.4-9.1 20.4-20.4V81.1l85.7 85.7c7.9 7.9 20.6 7.9 28.5 0 7.9-7.8 7.9-20.6 0-28.5zM287.1 347.2c-7.9-7.9-20.6-7.9-28.5 0l-85.7 85.7V80.1c0-11.3-9.1-20.4-20.4-20.4-11.3 0-20.4 9.1-20.4 20.4v352.8l-85.7-85.7c-7.9-7.9-20.6-7.9-28.5 0-7.9 7.9-7.9 20.6 0 28.5l120.4 120.4c7.9 7.9 20.6 7.9 28.5 0l120.4-120.4c7.8-7.9 7.8-20.7-.1-28.5z" />
-                            </svg>
-                        </button>
                     </div>
                     <div class="product-cell sales">Sales<button class="sort-button">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 512 512">
-                                <path fill="currentColor"
-                                    d="M496.1 138.3L375.7 17.9c-7.9-7.9-20.6-7.9-28.5 0L226.9 138.3c-7.9 7.9-7.9 20.6 0 28.5 7.9 7.9 20.6 7.9 28.5 0l85.7-85.7v352.8c0 11.3 9.1 20.4 20.4 20.4 11.3 0 20.4-9.1 20.4-20.4V81.1l85.7 85.7c7.9 7.9 20.6 7.9 28.5 0 7.9-7.8 7.9-20.6 0-28.5zM287.1 347.2c-7.9-7.9-20.6-7.9-28.5 0l-85.7 85.7V80.1c0-11.3-9.1-20.4-20.4-20.4-11.3 0-20.4 9.1-20.4 20.4v352.8l-85.7-85.7c-7.9-7.9-20.6-7.9-28.5 0-7.9 7.9-7.9 20.6 0 28.5l120.4 120.4c7.9 7.9 20.6 7.9 28.5 0l120.4-120.4c7.8-7.9 7.8-20.7-.1-28.5z" />
-                            </svg>
-                        </button></div>
+                    </div>
                     <div class="product-cell stock">Stock<button class="sort-button">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 512 512">
-                                <path fill="currentColor"
-                                    d="M496.1 138.3L375.7 17.9c-7.9-7.9-20.6-7.9-28.5 0L226.9 138.3c-7.9 7.9-7.9 20.6 0 28.5 7.9 7.9 20.6 7.9 28.5 0l85.7-85.7v352.8c0 11.3 9.1 20.4 20.4 20.4 11.3 0 20.4-9.1 20.4-20.4V81.1l85.7 85.7c7.9 7.9 20.6 7.9 28.5 0 7.9-7.8 7.9-20.6 0-28.5zM287.1 347.2c-7.9-7.9-20.6-7.9-28.5 0l-85.7 85.7V80.1c0-11.3-9.1-20.4-20.4-20.4-11.3 0-20.4 9.1-20.4 20.4v352.8l-85.7-85.7c-7.9-7.9-20.6-7.9-28.5 0-7.9 7.9-7.9 20.6 0 28.5l120.4 120.4c7.9 7.9 20.6 7.9 28.5 0l120.4-120.4c7.8-7.9 7.8-20.7-.1-28.5z" />
-                            </svg>
-                        </button></div>
+                    </div>
                     <div class="product-cell price">Price<button class="sort-button">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 512 512">
-                                <path fill="currentColor"
-                                    d="M496.1 138.3L375.7 17.9c-7.9-7.9-20.6-7.9-28.5 0L226.9 138.3c-7.9 7.9-7.9 20.6 0 28.5 7.9 7.9 20.6 7.9 28.5 0l85.7-85.7v352.8c0 11.3 9.1 20.4 20.4 20.4 11.3 0 20.4-9.1 20.4-20.4V81.1l85.7 85.7c7.9 7.9 20.6 7.9 28.5 0 7.9-7.8 7.9-20.6 0-28.5zM287.1 347.2c-7.9-7.9-20.6-7.9-28.5 0l-85.7 85.7V80.1c0-11.3-9.1-20.4-20.4-20.4-11.3 0-20.4 9.1-20.4 20.4v352.8l-85.7-85.7c-7.9-7.9-20.6-7.9-28.5 0-7.9 7.9-7.9 20.6 0 28.5l120.4 120.4c7.9 7.9 20.6 7.9 28.5 0l120.4-120.4c7.8-7.9 7.8-20.7-.1-28.5z" />
-                            </svg>
-                        </button></div>
+                    </div>
                 </div>
                 <?php
-                // Connect to the database
-                $servername = "localhost";
-                $username = "root";
-                $password = "";
-                $dbname = "product";
-
-                $conn = mysqli_connect($servername, $username, $password, $dbname);
-
-                // Check connection
-                if (!$conn) {
-                    die("Connection failed: " . mysqli_connect_error());
-                }
-
-                // Retrieve products from the database
                 $sql = "SELECT * FROM products";
                 $result = mysqli_query($conn, $sql);
 
@@ -125,7 +186,7 @@ if (!isSessionActive()) {
                     while ($row = mysqli_fetch_array($result)) {
                         echo '<div class="products-row">';
                         echo '<div class="product-cell image">';
-                        echo '<img src="uploads/' . $row["image"] . '">';
+                        echo '<a href="edit1.php?id=' . $row["id"] . '"><img src="uploads/' . $row["image"] . '"></a>';
                         echo '<span>' . $row["title"] . '</span>';
                         echo '</div>';
                         echo '<div class="product-cell sales"><span class="cell-label">Sales:</span>' . $row["sales"] . '</div>';
@@ -136,15 +197,66 @@ if (!isSessionActive()) {
                 } else {
                     echo "0 results";
                 }
-
-                // Close database connection
-                mysqli_close($conn);
                 ?>
+                </article>
+        </section>
 
-            </div>
-        </div>
-    </div>
+        <section class="products-area-wrappers">
+            <article>
+                <h4>Section 3</h4>
+            </article>
+        </section>
 
+        <section class="products-area-wrappers">
+            <article>
+                <div class="app-content">
+                    <div class="app-content-header">
+                        <h1 class="app-content-headerText">Clients</h1>
+                        <button class="app-content-headerButton" onclick="redirectToPage2()"
+                            style="transform: translateX(133vh);">Add Client</button>
+                    </div>
+
+                    <body>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Username</th>
+                                    <th>Password</th>
+                                    <th>Action</th>
+
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+
+                                // SQL query to select data from the table
+                                $sql = "SELECT * FROM cuser";
+                                $result = mysqli_query($conn, $sql);
+
+                                // Output data of each row
+                                while ($row = $result->fetch_assoc()) {
+                                    echo '<tr>';
+                                    echo '<td>' . $row["id"] . '</td>';
+                                    echo '<td>' . $row["Username"] . '</td>';
+                                    echo '<td>' . $row["Password"] . '</td>';
+                                    echo '<td>';
+                                    echo '<button type="button" onclick="window.location.href=\'editclient.php?id=' . $row["id"] . '\'"><i class="fa fa-edit"></i></button>';
+                                    echo '&nbsp;&nbsp;';
+                                    echo '<button type="button" onclick="if(confirm(\'Do you want to delete that particular product?\')) window.location.href=\'?id=' . $row["id"] . '\';"><i class="fa fa-close"></i></button>';
+                                    echo '</td>';
+                                    echo '</tr>';
+                                }
+                                $conn->close();
+                                ?>
+                            </tbody>
+                        </table>
+                    </body>
+
+</html>
+</h4>
+</article>
+</section>
 
 </body>
 <script>
@@ -178,10 +290,118 @@ if (!isSessionActive()) {
     function redirectToPage() {
         window.location.href = "product.html";
     }
-
-    function redirectToPage1() {
-        window.location.href = "delete.php";
+    // function redirectToPage1() {
+    //     window.location.href = "edit.php";
+    // }
+    function redirectToPage2() {
+        window.location.href = "addclient.html";
     }
 </script>
+<script>
+    (function ($) {
+        $('nav li').click(function () {
+            $(this).addClass('sidebar-list-item active').siblings('li').removeClass('sidebar-list-item active');
+            $('section:nth-of-type(' + $(this).data('rel') + ')').stop().fadeIn(400, 'linear').siblings('section').stop().fadeOut(400, 'linear');
+        });
+    })(jQuery);
+</script>
+<script src="js/jquery.min.js"></script>
+<script src="js/bootstrap-select.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/jquery.dataTables.min.js"></script>
+<script src="js/dataTables.bootstrap.min.js"></script>
+<script src="js/Chart.min.js"></script>
+<script src="js/fileinput.js"></script>
+<script src="js/chartData.js"></script>
+<script src="js/main.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<!-- Font awesome -->
+<link rel="stylesheet" href="css/font-awesome.min.css">
+<!-- Sandstone Bootstrap CSS -->
+<link rel="stylesheet" href="css/bootstrap.min.css">
+<!-- Bootstrap Datatables -->
+<link rel="stylesheet" href="css/dataTables.bootstrap.min.css">
+<!-- Bootstrap social button library -->
+<link rel="stylesheet" href="css/bootstrap-social.css">
+<!-- Bootstrap select -->
+<link rel="stylesheet" href="css/bootstrap-select.css">
+<!-- Bootstrap file input -->
+<link rel="stylesheet" href="css/fileinput.min.css">
+<!-- Awesome Bootstrap checkbox -->
+<link rel="stylesheet" href="css/awesome-bootstrap-checkbox.css">
+<!-- Admin Stye -->
+<link rel="stylesheet" href="css/style.css">
+<style>
+    .wrapper {
+        position: relative;
+        width: 960px;
+        padding: 10px;
+
+    }
+
+    section {
+        position: absolute;
+        display: none;
+        top: 10px;
+        right: 0;
+        width: 1140px;
+        min-height: 550px;
+        transform: translate(-1vh, -1vh);
+        overflow-y: scroll;
+    }
+
+    section:first-of-type {
+        display: block;
+    }
+
+    nav {
+        float: left;
+        width: 200px;
+    }
+
+
+    .products-area-wrapper {
+        width: 100%;
+        max-height: 580px;
+        padding: 0 4px;
+        overflow-y: scroll;
+    }
+
+    a {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        padding: 10px 16px;
+        color: var(--sidebar-link);
+        text-decoration: none;
+        font-size: 14px;
+        line-height: 24px;
+    }
+
+
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    th,
+    td {
+        text-align: left;
+        padding: 8px;
+    }
+
+    th {
+        background-color: #35483c;
+        color: white;
+    }
+
+    tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+
+    tr:hover {
+        background-color: #ddd;
+    }
+</style>
 
 </html>
