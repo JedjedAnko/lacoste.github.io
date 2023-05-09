@@ -12,9 +12,9 @@ if (!isset($_SESSION['userSession'])) {
 include('conn.php');
 
 // Get the product information from the database
-$product_id = $_POST['id'];
+$id = $_POST['id'];
 $quantity = $_POST['quantity'];
-$sql = "SELECT * FROM products WHERE id = '$product_id'";
+$sql = "SELECT * FROM products WHERE id = '$id'";
 $result = mysqli_query($conn, $sql);
 $product = mysqli_fetch_assoc($result);
 

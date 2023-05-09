@@ -16,8 +16,8 @@ input {
 }
 
 .container {
-  max-width: 510px;
-  min-width: 324px;
+  max-width: 515px;
+  min-width: 330px;
   margin: 50px auto 0px;
   background-color: #fff;
   border: 1px solid #cfcfcf;
@@ -43,6 +43,7 @@ input {
 
 .pull-right {
   float: right;
+  transform: translate(1vh,-10vh);
 }
 
 h1 {
@@ -87,7 +88,7 @@ h3 {
 }
 
 form {
-  max-width: 100%;
+  max-width: 105%;
   display: block;
 }
 
@@ -159,17 +160,17 @@ form small {
   margin: 0 0 0 0.5em;
 }
 
-@media only screen and (max-width: 480px) {
+@media only screen and (max-width: 500px) {
   .pull-right {
     float: none;
   }
 
   input {
-    width: 100%;
+    width: 90%;
   }
 
   label {
-    width: 100%;
+    width: 90%;
     display: inline-block;
     float: left;
     clear: both;

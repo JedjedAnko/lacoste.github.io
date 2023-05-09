@@ -3,7 +3,7 @@ include 'session_chk.php';
 include 'conn.php';
 
 if (!isSessionActive()) {
-    header("location: login.html");
+    header("location: login.php");
 }
 ?>
 
@@ -62,9 +62,8 @@ if (!isSessionActive()) {
                 <ul class="sidebar-list">
                     <li data-rel="1" class="sidebar-list-item active"><a href="#"><span>Dasboard</span></a></li>
                     <li data-rel="2" class="sidebar-list-item"><a href="#"><span>Products</span></a></li>
-                    <li data-rel="3" class="sidebar-list-item"><a href="#"><span>Sales</span></a></li>
+                    <li data-rel="3" class="sidebar-list-item"><a href="#"><span>Order Details</span></a></li>
                     <li data-rel="4" class="sidebar-list-item"><a href="#"><span>Clients</span></a></li>
-                    <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
                     <li class="sidebar-list-item"><a href="logout.php">Logout</a></li>
             </nav>
 
@@ -74,93 +73,117 @@ if (!isSessionActive()) {
                 <div class=" app-content">
                     <div class="app-content-header">
                         <h1 class="app-content-headerText">Dashboard</h1>
-                        <button class="app-content-headerButton" onclick="printSection()"
-                            style="transform: translateX(130vh);">Print</button>
                     </div>
-                    <?php
-                    // Retrieve the products data from the database
-                    $sql = "SELECT id, title, sales, stock, price FROM products";
-                    $result = mysqli_query($conn, $sql);
-                    // Create arrays to store the data
-                    $ids = array();
-                    $titles = array();
-                    $sales = array();
-                    $stocks = array();
-                    $prices = array();
-                    // Loop through the results and add the data to the arrays
-                    while ($row = mysqli_fetch_assoc($result)) {
-                        $ids[] = $row['id'];
-                        $titles[] = $row['title'];
-                        $sales[] = (int) $row['sales'];
-                        $stocks[] = (int) $row['stock'];
-                        $prices[] = (int) $row['price'];
-                    }
-                    // Create the chart data array
-                    $chart_data = array();
-                    $chart_data[] = array('Product', 'Sales', 'Stock', 'Price');
-                    for ($i = 0; $i < count($ids); $i++) {
-                        $chart_data[] = array($titles[$i], $sales[$i], $stocks[$i], $prices[$i]);
-                    }
-                    // Convert the chart data to JSON format
-                    $chart_data_json = json_encode($chart_data);
-                    ?>
-                    <!DOCTYPE html>
-                    <html>
 
-                    <head>
-                        <title>Product Sales and Stock Chart</title>
-                        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-                        <script type="text/javascript">
-                            google.charts.load('current', { 'packages': ['corechart'] });
-                            google.charts.setOnLoadCallback(drawChart);
-                            function drawChart() {
-                                var data = google.visualization.arrayToDataTable(<?php echo $chart_data_json; ?>);
-                                var options = {
-                                    title: 'Product Sales and Stock Levels',
-                                    hAxis: { title: 'Product', titleTextStyle: { color: '#333' } },
-                                    vAxis: { minValue: 0 },
-                                    seriesType: 'bars',
-                                    series: { 2: { type: 'line' } }
-                                };
-                                var chart = new google.visualization.ComboChart(document.getElementById('chart_div'));
-                                chart.draw(data, options);
+                    <div id="container" style="width: 80%; height: 500px;"></div>
+                    <script src="https://code.highcharts.com/highcharts.js"></script>
+                    <script>
+                        <?php
+                        $servername = "localhost";
+                        $username = "root";
+                        $password = "";
+                        $dbname = "product";
+                        $conn = mysqli_connect($servername, $username, $password, $dbname);
+                        if (!$conn) {
+                            die("Connection failed: " . mysqli_connect_error());
+                        }
+                        $sql = "SELECT id, title, sales, stock FROM products";
+                        $result = mysqli_query($conn, $sql);
+
+                        if (mysqli_num_rows($result) > 0) {
+                            $sales = array();
+                            $stock = array();
+                            $product = array();
+                            while ($row = mysqli_fetch_assoc($result)) {
+                                $sales[] = (int)$row['sales'];
+                                $stock[] = (int)$row['stock'];
+                                $product[] = $row['title'];
                             }
-                        </script>
-                        <script>
-                            function printSection() {
-                                var chartData = <?php echo json_encode($chart_data_json); ?>;
-                                var sectionToPrint = document.getElementById("printable-section");
-                                var chartDiv = document.createElement("div");
-                                chartDiv.innerHTML = "<h2>Sales and Stock Levels</h2>" + chartData;
-                                sectionToPrint.appendChild(chartDiv);
-                                var newWin = window.open('', 'Print-Window');
-                                newWin.document.write('<html><body>' + sectionToPrint.innerHTML + '</body></html>');
-                                newWin.document.close();
-                                newWin.focus();
-                                newWin.print();
-                                newWin.close();
-                                // Remove the chartDiv from the section after printing
-                                sectionToPrint.removeChild(chartDiv);
+                        } else {
+                            echo "No results found.";
+                        }
+                        ?>
+                        Highcharts.chart('container', {
+                            chart: {
+                                type: 'bar',
+                                height: 350
+                            },
+                            title: {
+                                text: 'Sales and Stock by Product'
+                            },
+                            xAxis: {
+                                categories: <?php echo json_encode($product); ?>,
+                                title: {
+                                    text: 'Product'
+                                }
+                            },
+                            yAxis: [{
+                                min: 0,
+                                title: {
+                                    text: 'Sales',
+                                    align: 'high'
+                                },
+                                labels: {
+                                    overflow: 'justify'
+                                }
+                            }, {
+                                title: {
+                                    text: 'Stock',
+                                    align: 'high'
+                                },
+                                opposite: true
+                            }],
+                            series: [{
+                                name: 'Sales',
+                                data: <?php echo json_encode($sales); ?>
+                            }, {
+                                name: 'Stock',
+                                data: <?php echo json_encode($stock); ?>,
+                                yAxis: 1
+                            }],
+                            responsive: {
+                                rules: [{
+                                    condition: {
+                                        maxWidth: 80 // Set the maximum width at which the chart will resize
+                                    },
+                                    chartOptions: {
+                                        chart: {
+                                            height: 250 // Set the new height of the chart
+                                        }
+                                    }
+                                }]
                             }
-                        </script>
-                    </head>
-
-                    <body>
-                        <div id="chart_div" style="width: 90%; height: 500px;"></div>
-                    </body>
-
-                    </html>
-
+                        });
+                    </script>
+                </div>
             </article>
         </section>
+        <style>
+            @media print {
+                body * {
+                    visibility: hidden;
+                }
+
+                #printable-section,
+                #printable-section * {
+                    visibility: visible;
+                }
+
+                #printable-section {
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                }
+            }
+        </style>
+
 
         <section class="products-area-wrappers"">
             <article>
                 <div class=" app-content">
             <div class="app-content-header">
                 <h1 class="app-content-headerText">Products</h1>
-                <button class="app-content-headerButton" onclick="redirectToPage()"
-                    style="transform: translateX(125vh);">Add Product</button>
+                <button class="app-content-headerButton" onclick="redirectToPage()" style="transform: translateX(125vh);">Add Product</button>
 
                 <!-- <button class="app-content-headerButton" onclick="printSection()">Print</button> -->
             </div>
@@ -203,7 +226,81 @@ if (!isSessionActive()) {
 
         <section class="products-area-wrappers">
             <article>
-                <h4>Section 3</h4>
+                <div class=" app-content">
+                    <div class="app-content-header">
+                        <h1 class="app-content-headerText">Order Details</h1>
+                    </div>
+                    <?php
+                    include 'conn.php';
+                    if (isset($_POST['submit'])) {
+                        $id = $_POST['id'];
+                        $status = $_POST['status'];
+
+                        $sql = "UPDATE orders SET status='$status' WHERE id=$id";
+                        if (mysqli_query($conn, $sql)) {
+                            echo "<script>alert('Status updated successfully.')</script>";
+                        } else {
+                            echo "<script>alert('Error updating status: " . mysqli_error($conn) . "')</script>";
+                        }
+                    }
+
+                    ?>
+
+                    <div class="wrapper">
+                        <div class="products-area-wrapper" style="	width: 1100px;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Product ID</th>
+                                        <th>Product Name</th>
+                                        <th>Quantity</th>
+                                        <th>Total Cost</th>
+                                        <th>Status</th>
+                                        <th>Username</th>
+                                        <th>Created At</th>
+                                        <th>Updated At</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php
+
+                                    $sql = "SELECT orders.id, orders.product_id, products.title, orders.quantity, orders.created_at, orders.updated_at, orders.total_cost, orders.status, cuser.Username FROM orders JOIN cuser ON orders.user_id=cuser.id JOIN products ON orders.product_id=products.id";
+                                    $result = mysqli_query($conn, $sql);
+
+                                    if ($result->num_rows > 0) {
+                                        while ($row = $result->fetch_assoc()) {
+                                            echo "<tr>";
+                                            echo "<td>" . $row["id"] . "</td>";
+                                            echo "<td>" . $row["product_id"] . "</td>";
+                                            echo "<td>" . $row["title"] . "</td>";
+                                            echo "<td>" . $row["quantity"] . "</td>";
+                                            echo "<td>&#8369;" . $row["total_cost"] . "</td>";
+                                            echo "<td>";
+                                            echo "<form method='post'>";
+                                            echo "<input type='hidden' name='id' value='" . $row["id"] . "' />";
+                                            echo "<select name='status' onchange='this.form.submit()'>";
+                                            echo "<option value='pending'" . ($row["status"] == "pending" ? " selected" : "") . ">Pending</option>";
+                                            echo "<option value='approved'" . ($row["status"] == "approved" ? " selected" : "") . ">Approved</option>";
+                                            echo "<option value='declined'" . ($row["status"] == "declined" ? " selected" : "") . ">Declined</option>";
+                                            echo "</select>";
+                                            echo "<input type='submit' name='submit' value='Update' />";
+                                            echo "</form>";
+                                            echo "</td>";
+                                            echo "<td>" . $row["Username"] . "</td>";
+                                            echo "<td>" . $row["created_at"] . "</td>";
+                                            echo "<td>" . $row["updated_at"] . "</td>";
+                                            echo "</tr>";
+                                        }
+                                    } else {
+                                        echo "<tr><td colspan='9'>No orders found</td></tr>";
+                                    }
+                                    ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
             </article>
         </section>
 
@@ -212,8 +309,7 @@ if (!isSessionActive()) {
                 <div class="app-content">
                     <div class="app-content-header">
                         <h1 class="app-content-headerText">Clients</h1>
-                        <button class="app-content-headerButton" onclick="redirectToPage2()"
-                            style="transform: translateX(133vh);">Add Client</button>
+                        <button class="app-content-headerButton" onclick="redirectToPage2()" style="transform: translateX(133vh);">Add Client</button>
                     </div>
 
                     <body>
@@ -260,11 +356,11 @@ if (!isSessionActive()) {
 
 </body>
 <script>
-    document.querySelector(".jsFilter").addEventListener("click", function () {
+    document.querySelector(".jsFilter").addEventListener("click", function() {
         document.querySelector(".filter-menu").classList.toggle("active");
     });
 
-    document.querySelector(".grid").addEventListener("click", function () {
+    document.querySelector(".grid").addEventListener("click", function() {
         document.querySelector(".list").classList.remove("active");
         document.querySelector(".grid").classList.add("active");
         document.querySelector(".products-area-wrapper").classList.add("gridView");
@@ -273,7 +369,7 @@ if (!isSessionActive()) {
             .classList.remove("tableView");
     });
 
-    document.querySelector(".list").addEventListener("click", function () {
+    document.querySelector(".list").addEventListener("click", function() {
         document.querySelector(".list").classList.add("active");
         document.querySelector(".grid").classList.remove("active");
         document.querySelector(".products-area-wrapper").classList.remove("gridView");
@@ -281,7 +377,7 @@ if (!isSessionActive()) {
     });
 
     var modeSwitch = document.querySelector('.mode-switch');
-    modeSwitch.addEventListener('click', function () {
+    modeSwitch.addEventListener('click', function() {
         document.documentElement.classList.toggle('light');
         modeSwitch.classList.toggle('active');
     });
@@ -298,8 +394,8 @@ if (!isSessionActive()) {
     }
 </script>
 <script>
-    (function ($) {
-        $('nav li').click(function () {
+    (function($) {
+        $('nav li').click(function() {
             $(this).addClass('sidebar-list-item active').siblings('li').removeClass('sidebar-list-item active');
             $('section:nth-of-type(' + $(this).data('rel') + ')').stop().fadeIn(400, 'linear').siblings('section').stop().fadeOut(400, 'linear');
         });

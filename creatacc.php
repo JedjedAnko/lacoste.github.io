@@ -19,7 +19,7 @@ if (isset($_POST["submit"])) {
             echo "<script>
             setTimeout(function() {
                 alert('Account Created Successfully');
-                window.location.href = 'login.html';
+                window.location.href = 'login.php';
             }, 100);
             </script>";
         } else {

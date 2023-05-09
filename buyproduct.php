@@ -1,3 +1,30 @@
+<?php
+// Check if the user has submitted the form
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+  // Get the product ID and quantity from the form data
+  $product_id = $_POST["product_id"];
+  $quantity = $_POST["quantity"];
+
+  // Connect to the database
+  $conn = mysqli_connect("localhost", "root", "", "product");
+
+  // Check connection
+  if (!$conn) {
+    die("Connection failed: " . mysqli_connect_error());
+  }
+
+  // Insert a new order record into the database
+  $sql = "INSERT INTO orders (product_id, quantity) VALUES ('$product_id', '$quantity')";
+  if (mysqli_query($conn, $sql)) {
+    echo "Order placed successfully!";
+  } else {
+    echo "Error: " . $sql . "<br>" . mysqli_error($conn);
+  }
+
+  // Close the database connection
+  mysqli_close($conn);
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -49,7 +76,7 @@
         echo '<div>';
         echo '<img src="uploads/' . $row["image"] . '" alt="' . $row["title"] . '" />';
         echo '<h3>' . $row["title"] . '</h3>';
-        echo '<a href="demofuck.php">Buy Now <i class="fas fa-chevron-right"></i></a>';
+        echo '<a href="demo.php">Buy Now <i class="fas fa-chevron-right"></i></a>';
         echo '</div>';
       }
 
