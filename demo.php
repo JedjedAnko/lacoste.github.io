@@ -1,4 +1,13 @@
 <?php
+include 'session_chk.php';
+include 'conn.php';
+
+if (!isSessionActive()) {
+    header("location: login.php");
+}
+?>
+
+<?php
 
 // Define database connection constants
 define('DB_HOST', 'localhost');
@@ -21,12 +30,6 @@ $product_query = "SELECT * FROM products";
 // Execute the product query
 $product_result = $mysqli->query($product_query);
 
-// Define SQL query to get all users
-$user_query = "SELECT * FROM cuser";
-
-// Execute the user query
-$user_result = $mysqli->query($user_query);
-
 // Define the order form
 echo '<form action="process_order.php" method="post">';
 echo '<label for="product_id">Select Product:</label>';
@@ -38,10 +41,7 @@ while ($product_row = $product_result->fetch_assoc()) {
 echo '</select><br>';
 echo '<label for="quantity">Quantity:</label>';
 echo '<input type="number" name="quantity" required><br>';
-echo '<label for="username">Username:</label>';
-echo '<input type="text" name="username" required><br>';
-echo '<label for="password">Password:</label>';
-echo '<input type="password" name="password" required><br>';
+echo '<input type="hidden" name="user_id" value="' . $_SESSION['userSession'] . '">';
 echo '<input type="submit" name="submit" value="Place Order">';
 echo '</form>';
 
@@ -49,6 +49,7 @@ echo '</form>';
 $mysqli->close();
 
 ?>
+
 <style>
     body {
         background-color: white;

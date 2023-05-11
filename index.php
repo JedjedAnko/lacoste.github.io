@@ -22,7 +22,6 @@
   </button>
   <nav class="nav" data-state="closed">
     <a href="login.php" style="--delay: 0.35s">Login</a>
-    <a href="buyproduct.php" style="--delay: 0.45s">Products</a>
     <a href="contact.html" style="--delay: 0.5s">Contact</a>
   </nav>
   <header class="header" data-menustate="closed">

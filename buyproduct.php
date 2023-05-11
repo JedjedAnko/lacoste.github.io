@@ -1,4 +1,13 @@
 <?php
+include 'session_chk.php';
+include 'conn.php';
+
+if (!isSessionActive()) {
+  header("location: login.php");
+}
+?>
+
+<?php
 // Check if the user has submitted the form
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
   // Get the product ID and quantity from the form data
@@ -45,9 +54,57 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <!-- Nav -->
     <nav class="main-nav">
       <img src="https://lacoste.com.ph/media/logo/default/default-logo-desktop_1_1.svg" alt="Microsoft" class="logo" />
-    </nav>
 
-    <!-- Showcase -->
+      <div class="dropdown">
+        <button class="dropbtn">Welcome,
+          <?php echo $_SESSION['userSession']; ?>
+        </button>
+        <div class="dropdown-content">
+          <a href="#">Profile</a>
+          <a href="#">Settings</a>
+          <a href="logout.php">Logout</a>
+        </div>
+      </div>
+    </nav>
+    <style>
+      .dropbtn {
+        background-color: #35483c;
+        color: white;
+        padding: 16px;
+        font-size: 12px;
+        border: none;
+        cursor: pointer;
+      }
+
+      .dropdown {
+        position: relative;
+        display: inline-block;
+      }
+
+      .dropdown-content {
+        display: none;
+        position: absolute;
+        z-index: 1;
+      }
+
+      .dropdown-content a {
+        color: white;
+        padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+      }
+
+      .dropdown:hover .dropdown-content {
+        display: block;
+      }
+
+      /* Optional styling for the active link */
+      .dropdown-content a.active {
+        background-color: #4CAF50;
+        color: white;
+      }
+    </style>
+    
     <header class="showcase">
       <h2>Surface Deals</h2>
       <p>Select Surfaces are on sale now - save while supplies last</p>

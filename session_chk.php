@@ -39,7 +39,7 @@ if (isset($_POST['login'])) {
 
     if ($counts > 0) {
         $_SESSION['userSession'] = $cususer;
-        header("Location: dashboard3.php");
+        header("Location: buyproduct.php");
         exit();
     } else {
         header("location: incorrect.html");

@@ -95,8 +95,8 @@ if (!isSessionActive()) {
                             $stock = array();
                             $product = array();
                             while ($row = mysqli_fetch_assoc($result)) {
-                                $sales[] = (int)$row['sales'];
-                                $stock[] = (int)$row['stock'];
+                                $sales[] = (int) $row['sales'];
+                                $stock[] = (int) $row['stock'];
                                 $product[] = $row['title'];
                             }
                         } else {
@@ -183,7 +183,8 @@ if (!isSessionActive()) {
                 <div class=" app-content">
             <div class="app-content-header">
                 <h1 class="app-content-headerText">Products</h1>
-                <button class="app-content-headerButton" onclick="redirectToPage()" style="transform: translateX(125vh);">Add Product</button>
+                <button class="app-content-headerButton" onclick="redirectToPage()"
+                    style="transform: translateX(125vh);">Add Product</button>
 
                 <!-- <button class="app-content-headerButton" onclick="printSection()">Print</button> -->
             </div>
@@ -231,75 +232,64 @@ if (!isSessionActive()) {
                         <h1 class="app-content-headerText">Order Details</h1>
                     </div>
                     <?php
-                    include 'conn.php';
-                    if (isset($_POST['submit'])) {
-                        $id = $_POST['id'];
-                        $status = $_POST['status'];
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
 
-                        $sql = "UPDATE orders SET status='$status' WHERE id=$id";
-                        if (mysqli_query($conn, $sql)) {
-                            echo "<script>alert('Status updated successfully.')</script>";
-                        } else {
-                            echo "<script>alert('Error updating status: " . mysqli_error($conn) . "')</script>";
-                        }
-                    }
+// SQL query to select all data from orders table
+$sql = "SELECT * FROM orders";
 
-                    ?>
+// Execute the query
+$result = $conn->query($sql);
 
-                    <div class="wrapper">
-                        <div class="products-area-wrapper" style="	width: 1100px;">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Product ID</th>
-                                        <th>Product Name</th>
-                                        <th>Quantity</th>
-                                        <th>Total Cost</th>
-                                        <th>Status</th>
-                                        <th>Username</th>
-                                        <th>Created At</th>
-                                        <th>Updated At</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php
+// Check if there are any records in the table
+if ($result->num_rows > 0) {
+    // Output table header
+    echo "<table>
+        <tr>
+            <th>ID</th>
+            <th>Product ID</th>
+            <th>Username</th>
+            <th>Quantity</th>
+            <th>Total Cost</th>
+            <th>Status</th>
+            <th>Created At</th>
+        </tr>";
 
-                                    $sql = "SELECT orders.id, orders.product_id, products.title, orders.quantity, orders.created_at, orders.updated_at, orders.total_cost, orders.status, cuser.Username FROM orders JOIN cuser ON orders.user_id=cuser.id JOIN products ON orders.product_id=products.id";
-                                    $result = mysqli_query($conn, $sql);
+    // Output data of each row
+    while ($row = $result->fetch_assoc()) {
+        echo "<tr>
+            <td>" . $row["id"] . "</td>
+            <td>" . $row["product_id"] . "</td>
+            <td>" . $row["user_id"] . "</td>
+            <td>" . $row["quantity"] . "</td>
+            <td>" . $row["total_cost"] . "</td>
+            <td>";
 
-                                    if ($result->num_rows > 0) {
-                                        while ($row = $result->fetch_assoc()) {
-                                            echo "<tr>";
-                                            echo "<td>" . $row["id"] . "</td>";
-                                            echo "<td>" . $row["product_id"] . "</td>";
-                                            echo "<td>" . $row["title"] . "</td>";
-                                            echo "<td>" . $row["quantity"] . "</td>";
-                                            echo "<td>&#8369;" . $row["total_cost"] . "</td>";
-                                            echo "<td>";
-                                            echo "<form method='post'>";
-                                            echo "<input type='hidden' name='id' value='" . $row["id"] . "' />";
-                                            echo "<select name='status' onchange='this.form.submit()'>";
-                                            echo "<option value='pending'" . ($row["status"] == "pending" ? " selected" : "") . ">Pending</option>";
-                                            echo "<option value='approved'" . ($row["status"] == "approved" ? " selected" : "") . ">Approved</option>";
-                                            echo "<option value='declined'" . ($row["status"] == "declined" ? " selected" : "") . ">Declined</option>";
-                                            echo "</select>";
-                                            echo "<input type='submit' name='submit' value='Update' />";
-                                            echo "</form>";
-                                            echo "</td>";
-                                            echo "<td>" . $row["Username"] . "</td>";
-                                            echo "<td>" . $row["created_at"] . "</td>";
-                                            echo "<td>" . $row["updated_at"] . "</td>";
-                                            echo "</tr>";
-                                        }
-                                    } else {
-                                        echo "<tr><td colspan='9'>No orders found</td></tr>";
-                                    }
-                                    ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+        // Output status dropdown menu button
+        echo "<form method='POST' action='update_status.php'>";
+        echo "<input type='hidden' name='order_id' value='" . $row["id"] . "' />";
+        echo "<select name='status'>
+            <option value='Pending' " . ($row["STATUS"] == 'Pending' ? 'selected' : '') . ">Pending</option>
+            <option value='Approved' " . ($row["STATUS"] == 'Approved' ? 'selected' : '') . ">Approved</option>
+            <option value='Declined' " . ($row["STATUS"] == 'Declined' ? 'selected' : '') . ">Declined</option>
+        </select>";
+        echo "<button type='submit'>Update</button>";
+        echo "</form>";
+
+        echo "</td>
+            <td>" . $row["created_at"] . "</td>
+        </tr>";
+    }
+
+    // Output table footer
+    echo "</table>";
+} else {
+    echo "No records found";
+}
+?>
+
 
             </article>
         </section>
@@ -309,7 +299,8 @@ if (!isSessionActive()) {
                 <div class="app-content">
                     <div class="app-content-header">
                         <h1 class="app-content-headerText">Clients</h1>
-                        <button class="app-content-headerButton" onclick="redirectToPage2()" style="transform: translateX(133vh);">Add Client</button>
+                        <button class="app-content-headerButton" onclick="redirectToPage2()"
+                            style="transform: translateX(133vh);">Add Client</button>
                     </div>
 
                     <body>
@@ -356,11 +347,11 @@ if (!isSessionActive()) {
 
 </body>
 <script>
-    document.querySelector(".jsFilter").addEventListener("click", function() {
+    document.querySelector(".jsFilter").addEventListener("click", function () {
         document.querySelector(".filter-menu").classList.toggle("active");
     });
 
-    document.querySelector(".grid").addEventListener("click", function() {
+    document.querySelector(".grid").addEventListener("click", function () {
         document.querySelector(".list").classList.remove("active");
         document.querySelector(".grid").classList.add("active");
         document.querySelector(".products-area-wrapper").classList.add("gridView");
@@ -369,7 +360,7 @@ if (!isSessionActive()) {
             .classList.remove("tableView");
     });
 
-    document.querySelector(".list").addEventListener("click", function() {
+    document.querySelector(".list").addEventListener("click", function () {
         document.querySelector(".list").classList.add("active");
         document.querySelector(".grid").classList.remove("active");
         document.querySelector(".products-area-wrapper").classList.remove("gridView");
@@ -377,7 +368,7 @@ if (!isSessionActive()) {
     });
 
     var modeSwitch = document.querySelector('.mode-switch');
-    modeSwitch.addEventListener('click', function() {
+    modeSwitch.addEventListener('click', function () {
         document.documentElement.classList.toggle('light');
         modeSwitch.classList.toggle('active');
     });
@@ -394,8 +385,8 @@ if (!isSessionActive()) {
     }
 </script>
 <script>
-    (function($) {
-        $('nav li').click(function() {
+    (function ($) {
+        $('nav li').click(function () {
             $(this).addClass('sidebar-list-item active').siblings('li').removeClass('sidebar-list-item active');
             $('section:nth-of-type(' + $(this).data('rel') + ')').stop().fadeIn(400, 'linear').siblings('section').stop().fadeOut(400, 'linear');
         });
