@@ -60,8 +60,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
           <?php echo $_SESSION['userSession']; ?>
         </button>
         <div class="dropdown-content">
-          <a href="#">Profile</a>
-          <a href="#">Settings</a>
+          <a href="customer_dashboard.php">Purchased Products</a>
           <a href="logout.php">Logout</a>
         </div>
       </div>
@@ -104,13 +103,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         color: white;
       }
     </style>
-    
+
     <header class="showcase">
       <h2>Surface Deals</h2>
       <p>Select Surfaces are on sale now - save while supplies last</p>
-      <a href="#" class="btn">
-        Buy Now <i class="fas fa-chevron-right"></i>
-      </a>
+
     </header>
 
     <!-- Home cards 1 -->
@@ -168,7 +165,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <div class="footer-inner">
       <div><i class="fas fa-globe fa-2x"></i> English (Philippines)</div>
       <ul>
-        <li><a href="#" style="  color: #fff;">&copy; Lacoste 2020</a></li>
+        <li><a href="#" style="  color: #fff;">&copy; Lacoste 2023</a></li>
       </ul>
     </div>
   </footer>

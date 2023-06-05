@@ -6,7 +6,6 @@ if (!isSessionActive()) {
     header("location: login.php");
 }
 ?>
-
 <?php
 
 // Define database connection constants
@@ -33,15 +32,22 @@ $product_result = $mysqli->query($product_query);
 // Define the order form
 echo '<form action="process_order.php" method="post">';
 echo '<label for="product_id">Select Product:</label>';
-echo '<select name="product_id">';
+echo '<select name="product_id" id="productSelect" onchange="displayPrice()">';
 // Loop through all products and add them to the select menu
 while ($product_row = $product_result->fetch_assoc()) {
-    echo '<option value="' . $product_row['id'] . '">' . $product_row['title'] . '</option>';
+    echo '<option value="' . $product_row['id'] . '" data-price="' . $product_row['price'] . '">' . $product_row['title'] . '</option>';
 }
 echo '</select><br>';
 echo '<label for="quantity">Quantity:</label>';
 echo '<input type="number" name="quantity" required><br>';
+echo '<label for="payment_method">Select Payment Method:</label>';
+echo '<select name="payment_method">';
+echo '<option value="paypal">PayPal</option>';
+echo '<option value="gcash">GCash</option>';
+echo '<option value="cod">Cash on Delivery</option>';
+echo '</select><br>';
 echo '<input type="hidden" name="user_id" value="' . $_SESSION['userSession'] . '">';
+echo '<p id="priceDisplay"></p>';
 echo '<input type="submit" name="submit" value="Place Order">';
 echo '</form>';
 
@@ -49,6 +55,18 @@ echo '</form>';
 $mysqli->close();
 
 ?>
+
+<script>
+    function displayPrice() {
+        var selectElement = document.getElementById("productSelect");
+        var priceDisplayElement = document.getElementById("priceDisplay");
+        var selectedOption = selectElement.options[selectElement.selectedIndex];
+        var price = selectedOption.getAttribute("data-price");
+        priceDisplayElement.textContent = "Price: $" + price;
+    }
+</script>
+
+
 
 <style>
     body {

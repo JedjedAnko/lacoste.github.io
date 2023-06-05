@@ -20,10 +20,11 @@ if ($mysqli->connect_error) {
         . $mysqli->connect_error);
 }
 
-// Get the product ID and quantity from the form submission
+// Get the product ID, quantity, and payment method from the form submission
 $product_id = $_POST['product_id'];
 $quantity = $_POST['quantity'];
 $user_id = $_POST['user_id'];
+$payment_method = $_POST['payment_method'];
 
 // Query the database to get the price of the product and the current stock
 $product_query = "SELECT price, stock FROM products WHERE id = $product_id";
@@ -38,8 +39,8 @@ $total_cost = $quantity * $price;
 // Check if there's enough stock for the order
 if ($current_stock >= $quantity) {
     // Insert the order into the database
-    $insert_query = "INSERT INTO orders (product_id, user_id, quantity, total_cost, status) 
-                     VALUES ($product_id, '$user_id', $quantity, $total_cost, 'pending')";
+    $insert_query = "INSERT INTO orders (product_id, user_id, quantity, total_cost, payment_method, status) 
+                     VALUES ($product_id, '$user_id', $quantity, $total_cost, '$payment_method', 'pending')";
     if ($mysqli->query($insert_query) === TRUE) {
         echo "<script>
         setTimeout(function() {
@@ -61,4 +62,3 @@ if ($current_stock >= $quantity) {
 
 // Close the database connection
 $mysqli->close();
-?>
